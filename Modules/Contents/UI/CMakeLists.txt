@@ -14,6 +14,7 @@ SET(polycodeUI_SRCS
     Source/PolyUIHScrollBar.cpp
     Source/PolyUIHSlider.cpp
     Source/PolyUIImageButton.cpp
+    Source/PolyUILoader.cpp
     Source/PolyUIScrollContainer.cpp
     Source/PolyUITextInput.cpp
     Source/PolyUITree.cpp
@@ -40,6 +41,7 @@ SET(polycodeUI_HDRS
     Include/PolyUIHScrollBar.h
     Include/PolyUIHSlider.h
     Include/PolyUIImageButton.h
+    Include/PolyUILoader.h
     Include/PolyUIScrollContainer.h
     Include/PolyUITextInput.h
     Include/PolyUITree.h
