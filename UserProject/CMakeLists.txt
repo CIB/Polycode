@@ -62,6 +62,7 @@ ELSE(MSVC OR MINGW)
 		rt
 		pthread
 		PolycodeLua_d
+		PolycodeUI_d
 		Polycore_d
 		${LUA_LIBRARY}
 		${FREETYPE_LIBRARIES}
@@ -77,7 +78,6 @@ ELSE(MSVC OR MINGW)
 		dl
 		Polycode2DPhysics_d
 		Polycode3DPhysics_d
-		PolycodeUI_d
 		${BOX2D_RELEASE_LIBRARY}
 		
 		optimized ${LIBBULLETMULTITHREADED}
