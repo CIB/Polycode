@@ -42,10 +42,10 @@ namespace Polycode {
 
     class _PolyExport UILoader {
 	public:
-		UIElement* loadXML(TiXmlDocument *doc);
+		UIElement* loadObject(Object *doc);
 	protected:
-        UIButton* buildButton(TiXmlElement *data);
-        UIBox* buildBox(TiXmlElement *data);
-		UIElement* loadXMLElement(TiXmlElement *node, Entity* parent);
+        UIButton* buildButton(ObjectEntry *data);
+        UIBox* buildBox(ObjectEntry *data);
+		UIElement* loadObjectEntry(ObjectEntry *node, Entity* parent);
     };
 }
