@@ -25,14 +25,6 @@
 
 using namespace Polycode;
 
-UIDefinition::UIDefinition(TiXmlDocument* xmlDescription) : Entity() {
-    this->xmlDescription = new TiXmlDocument(*xmlDescription);
-}
-
-UIDefinition::~UIDefinition() {
-    delete xmlDescription;
-}
-
 UIButton* UILoader::buildButton(TiXmlElement *data) {
     Number xPos, yPos, width, height = -1;
     const char* label;
@@ -75,4 +67,44 @@ UIButton* UILoader::buildButton(TiXmlElement *data) {
     rval->setPosition(xPos, yPos);
 
     return rval;
+}
+
+UIElement* UILoader::loadXML(TiXmlDocument *doc) {
+	TiXmlHandle docHandle(doc); TiXmlHandle root = docHandle.FirstChildElement();
+	if(!root.ToElement() || String(root.ToElement()->Value()) != "Elements") {
+		throw UILoaderError("XML Document contains no UI elements.");
+	}
+
+	// An empty root container to store all children in.
+	UIElement *rootContainer = new UIElement();
+
+	loadXMLElement(root.ToElement(), rootContainer);
+
+	return rootContainer;
+}
+
+UIElement* UILoader::loadXMLElement(TiXmlElement *node, Entity* parent) {
+	TiXmlHandle elementHandle(node);
+	TiXmlElement *nextElement = elementHandle.FirstChild("Element").ToElement();
+	for( nextElement; nextElement!= NULL; nextElement=nextElement->NextSiblingElement())
+	{
+		String elementType(nextElement->Attribute("type"));
+		UIElement *child = NULL;
+
+		if(elementType == "Button") {
+			child = buildButton(nextElement);
+		} else {
+			throw UILoaderError("Element of unknown type.");
+		}
+
+		const char* elementTag = nextElement->Attribute("id");
+		if(elementTag) {
+			child->id = String(elementTag);
+		}
+
+		// Recursively search the child element for grandchildren,
+		// and add them as children of the child.
+		loadXMLElement(nextElement, child);
+		parent->addChild(child);
+	}
 }

@@ -33,25 +33,18 @@ namespace Polycode {
      * Thrown when anything goes wrong with loading an UI definition.
      */
     class UILoaderError : public std::runtime_error {
-        // TODO: Find out
+        // TODO: Find out whether tinyxml supports error line numbers
+        //       and attach those to the error.
 	public:
         UILoaderError() : runtime_error("Error while loading UI Definition.") {};
         UILoaderError(String message) : runtime_error(message.c_str()) {};
     };
 
-	class _PolyExport UIDefinition : public Entity {
+    class _PolyExport UILoader {
 	public:
-			UIDefinition(TiXmlDocument *description);
-			virtual ~UIDefinition();
+		UIElement* loadXML(TiXmlDocument *doc);
 	protected:
-            TiXmlDocument *xmlDescription;
-	};
-
-
-    typedef UIElement* (*UIXMLConstructor)(TiXmlElement data);
-
-    class _PolyExport UILoader : public Entity {
-	public:
         UIButton* buildButton(TiXmlElement *data);
+		UIElement* loadXMLElement(TiXmlElement *node, Entity* parent);
     };
 }
