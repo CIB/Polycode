@@ -127,10 +127,10 @@ UIElement* UILoader::loadXML(TiXmlDocument *doc) {
 
 UIElement* UILoader::loadXMLElement(TiXmlElement *node, Entity* parent) {
 	TiXmlHandle elementHandle(node);http://i.imgur.com/zFiJj.jpg
-	TiXmlElement *nextElement = elementHandle.FirstChild("Element").ToElement();
+	TiXmlElement *nextElement = elementHandle.FirstChild().ToElement();
 	for( nextElement; nextElement!= NULL; nextElement=nextElement->NextSiblingElement())
 	{
-		String elementType(nextElement->Attribute("type"));
+		String elementType(nextElement->Value());
 		ScreenEntity *child = NULL;
 
 		if(elementType == "Button") {
