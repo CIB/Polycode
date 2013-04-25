@@ -45,6 +45,7 @@ namespace Polycode {
 		UIElement* loadXML(TiXmlDocument *doc);
 	protected:
         UIButton* buildButton(TiXmlElement *data);
+        UIBox* buildBox(TiXmlElement *data);
 		UIElement* loadXMLElement(TiXmlElement *node, Entity* parent);
     };
 }

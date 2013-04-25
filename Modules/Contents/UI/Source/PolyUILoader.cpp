@@ -26,21 +26,10 @@
 using namespace Polycode;
 
 UIButton* UILoader::buildButton(TiXmlElement *data) {
-    Number xPos, yPos, width, height = -1;
+    Number width, height = -1;
     const char* label;
 
-    int result;
-    result = data->QueryFloatAttribute("xPos", &xPos);
-    if(result != TIXML_SUCCESS) {
-        throw UILoaderError("Button XML node has no xPos attribute of type Number.");
-    }
-
-    result = data->QueryFloatAttribute("yPos", &yPos);
-    if(result != TIXML_SUCCESS) {
-        throw UILoaderError("Button XML node has no yPos attribute of type Number.");
-    }
-
-    result = data->QueryFloatAttribute("width", &width);
+	int result = data->QueryFloatAttribute("width", &width);
     if(result != TIXML_SUCCESS) {
         throw UILoaderError("Button XML node has no width attribute of type Number.");
     } else if(width < 0) {
@@ -64,8 +53,61 @@ UIButton* UILoader::buildButton(TiXmlElement *data) {
         rval = new UIButton(String(label), width);
     }
 
-    rval->setPosition(xPos, yPos);
+    return rval;
+}
 
+UIBox* UILoader::buildBox(TiXmlElement *data) {
+    Number width, height, borderTop, borderBottom, borderLeft, borderRight = -1;
+    const char* imageFile;
+
+	int result = data->QueryFloatAttribute("width", &width);
+    if(result != TIXML_SUCCESS) {
+        throw UILoaderError("Box XML node has no width attribute of type Number.");
+    } else if(width < 0) {
+        throw UILoaderError("Box XML node has negative width.");
+    }
+
+	result = data->QueryFloatAttribute("height", &height);
+    if(result != TIXML_SUCCESS) {
+        throw UILoaderError("Box XML node has no height attribute of type Number.");
+    } else if(height < 0) {
+        throw UILoaderError("Box XML node has negative height.");
+    }
+
+	result = data->QueryFloatAttribute("borderTop", &borderTop);
+    if(result != TIXML_SUCCESS) {
+        throw UILoaderError("Box XML node has no borderTop attribute of type Number.");
+    } else if(borderTop < 0) {
+        throw UILoaderError("Box XML node has negative borderTop.");
+    }
+
+	result = data->QueryFloatAttribute("borderBottom", &borderBottom);
+    if(result != TIXML_SUCCESS) {
+        throw UILoaderError("Box XML node has no borderBottom attribute of type Number.");
+    } else if(borderBottom < 0) {
+        throw UILoaderError("Box XML node has negative borderBottom.");
+    }
+
+	result = data->QueryFloatAttribute("borderLeft", &borderLeft);
+    if(result != TIXML_SUCCESS) {
+        throw UILoaderError("Box XML node has no borderLeft attribute of type Number.");
+    } else if(borderLeft < 0) {
+        throw UILoaderError("Box XML node has negative borderLeft.");
+    }
+
+	result = data->QueryFloatAttribute("borderRight", &borderRight);
+    if(result != TIXML_SUCCESS) {
+        throw UILoaderError("Box XML node has no borderRight attribute of type Number.");
+    } else if(borderRight < 0) {
+        throw UILoaderError("Box XML node has negative borderRight.");
+    }
+
+    imageFile = data->Attribute("image");
+    if(imageFile == NULL) {
+        throw UILoaderError("Box XML node has no image file specified.");
+    }
+
+    UIBox* rval = new UIBox(String(imageFile), borderTop, borderRight, borderBottom, borderLeft, width, height);
     return rval;
 }
 
@@ -84,23 +126,39 @@ UIElement* UILoader::loadXML(TiXmlDocument *doc) {
 }
 
 UIElement* UILoader::loadXMLElement(TiXmlElement *node, Entity* parent) {
-	TiXmlHandle elementHandle(node);
+	TiXmlHandle elementHandle(node);http://i.imgur.com/zFiJj.jpg
 	TiXmlElement *nextElement = elementHandle.FirstChild("Element").ToElement();
 	for( nextElement; nextElement!= NULL; nextElement=nextElement->NextSiblingElement())
 	{
 		String elementType(nextElement->Attribute("type"));
-		UIElement *child = NULL;
+		ScreenEntity *child = NULL;
 
 		if(elementType == "Button") {
 			child = buildButton(nextElement);
+		} else if(elementType == "Box") {
+			child = buildBox(nextElement);
 		} else {
 			throw UILoaderError("Element of unknown type.");
 		}
 
+		// Do some generic UIElement updates from data
 		const char* elementTag = nextElement->Attribute("id");
 		if(elementTag) {
 			child->id = String(elementTag);
 		}
+
+		int result;
+		Number xPos, yPos = -1;
+		result = nextElement->QueryFloatAttribute("xPos", &xPos);
+		if(result != TIXML_SUCCESS) {
+			throw UILoaderError("Button XML node has no xPos attribute of type Number.");
+		}
+
+		result = nextElement->QueryFloatAttribute("yPos", &yPos);
+		if(result != TIXML_SUCCESS) {
+			throw UILoaderError("Button XML node has no yPos attribute of type Number.");
+		}
+		child->setPosition(xPos, yPos);
 
 		// Recursively search the child element for grandchildren,
 		// and add them as children of the child.
