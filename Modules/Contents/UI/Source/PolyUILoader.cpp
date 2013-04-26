@@ -25,17 +25,33 @@
 
 using namespace Polycode;
 
+Number UILoader::readNumberOrError(ObjectEntry *from, String key, String errorWhere) {
+	Number rval = -1;
+	bool result = from->readNumber(key, &rval);
+	if(result) {
+		return result;
+	} else {
+		throw UILoaderError(errorWhere + ": "+from->name+"["+key+"] must be a number.");
+	}
+}
+
+Number UILoader::readNumberNonNegativeOrError(ObjectEntry *from, String key, String errorWhere) {
+	Number rval = readNumberOrError(from, key, errorWhere);
+	if(rval < 0) {
+		throw UILoaderError(errorWhere + ": "+from->name+"["+key+"] must be non-negative.");
+	}
+	return rval;
+}
+
 UIButton* UILoader::buildButton(ObjectEntry *data) {
     Number width, height = -1;
     String label = "";
+	String errorWhere = "Building Button";
 
-	bool result = data->readNumber("width", &width);
-    if(!result) {
-        throw UILoaderError("Button XML node has no width attribute of type Number.");
-    } else if(width < 0) {
-        throw UILoaderError("Button XML node has negative width.");
-    }
+	width = readNumberNonNegativeOrError(data, "width", errorWhere);
 
+	// If "label" doesn't exist or is of wrong type, &label
+	// will keep pointing to an empty string.
     data->readString("label", &label);
 
     bool hasHeight = data->readNumber("height", &height);
@@ -56,53 +72,16 @@ UIButton* UILoader::buildButton(ObjectEntry *data) {
 UIBox* UILoader::buildBox(ObjectEntry *data) {
     Number width, height, borderTop, borderBottom, borderLeft, borderRight = -1;
     String imageFile;
+	String errorWhere = "Building Box";
 
-	bool result = data->readNumber("width", &width);
-    if(!result) {
-        throw UILoaderError("Box XML node has no width attribute of type Number.");
-    } else if(width < 0) {
-        throw UILoaderError("Box XML node has negative width.");
-    }
+	width = readNumberNonNegativeOrError(data, "width", errorWhere);
+	height = readNumberNonNegativeOrError(data, "height", errorWhere);
+	borderTop = readNumberNonNegativeOrError(data, "borderTop", errorWhere);
+	borderBottom = readNumberNonNegativeOrError(data, "borderBottom", errorWhere);
+	borderLeft = readNumberNonNegativeOrError(data, "borderLeft", errorWhere);
+	borderRight = readNumberNonNegativeOrError(data, "borderRight", errorWhere);
 
-	result = data->readNumber("height", &height);
-    if(!result) {
-        throw UILoaderError("Box XML node has no height attribute of type Number.");
-    } else if(height < 0) {
-        throw UILoaderError("Box XML node has negative height.");
-    }
-
-	result = data->readNumber("borderTop", &borderTop);
-    if(!result) {
-        throw UILoaderError("Box XML node has no borderTop attribute of type Number.");
-    } else if(borderTop < 0) {
-        throw UILoaderError("Box XML node has negative borderTop.");
-    }
-
-	result = data->readNumber("borderBottom", &borderBottom);
-    if(!result) {
-        throw UILoaderError("Box XML node has no borderBottom attribute of type Number.");
-    } else if(borderBottom < 0) {
-        throw UILoaderError("Box XML node has negative borderBottom.");
-    }
-
-	result = data->readNumber("borderLeft", &borderLeft);
-    if(!result) {
-        throw UILoaderError("Box XML node has no borderLeft attribute of type Number.");
-    } else if(borderLeft < 0) {
-        throw UILoaderError("Box XML node has negative borderLeft.");
-    }
-
-	result = data->readNumber("borderRight", &borderRight);
-    if(!result) {
-        throw UILoaderError("Box XML node has no borderRight attribute of type Number.");
-    } else if(borderRight < 0) {
-        throw UILoaderError("Box XML node has negative borderRight.");
-    }
-
-    result = data->readString("image", &imageFile);
-    if(!result) {
-        throw UILoaderError("Box XML node has no image file specified.");
-    }
+	imageFile = readStringOrError(data, "image", errorWhere);
 
     UIBox* rval = new UIBox(imageFile, borderTop, borderRight, borderBottom, borderLeft, width, height);
     return rval;

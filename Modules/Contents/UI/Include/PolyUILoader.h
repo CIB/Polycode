@@ -44,6 +44,10 @@ namespace Polycode {
 	public:
 		UIElement* loadObject(Object *doc);
 	protected:
+		Number readNumberNonNegativeOrError(ObjectEntry *from, String key, String errorWhere);
+		Number readNumberOrError(ObjectEntry *from, String key, String errorWhere);
+		String readStringOrError(ObjectEntry *from, String key, String errorWhere);
+
         UIButton* buildButton(ObjectEntry *data);
         UIBox* buildBox(ObjectEntry *data);
 		UIElement* loadObjectEntry(ObjectEntry *node, Entity* parent);
