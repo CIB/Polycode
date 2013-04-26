@@ -29,7 +29,7 @@ Number UILoader::readNumberOrError(ObjectEntry *from, String key, String errorWh
 	Number rval = -1;
 	bool result = from->readNumber(key, &rval);
 	if(result) {
-		return result;
+		return rval;
 	} else {
 		throw UILoaderError(errorWhere + ": "+from->name+"["+key+"] must be a number.");
 	}
@@ -41,6 +41,16 @@ Number UILoader::readNumberNonNegativeOrError(ObjectEntry *from, String key, Str
 		throw UILoaderError(errorWhere + ": "+from->name+"["+key+"] must be non-negative.");
 	}
 	return rval;
+}
+
+String UILoader::readStringOrError(ObjectEntry *from, String key, String errorWhere) {
+	String rval = "";
+	bool result = from->readString(key, &rval);
+	if(result) {
+		return rval;
+	} else {
+		throw UILoaderError(errorWhere + ": "+from->name+"["+key+"] must be a String.");
+	}
 }
 
 UIButton* UILoader::buildButton(ObjectEntry *data) {
@@ -104,7 +114,10 @@ UIElement* UILoader::loadObjectEntry(ObjectEntry *node, Entity* parent) {
 	for(int i=0; i < node->children.size(); i++)
 	{
 		ObjectEntry* nextElement = node->children[i];
-		if(nextElement->type != ObjectEntry::CONTAINER_ENTRY) {
+		if( // If the child is an attribute, rather than a tag, skip it.
+			nextElement->type != ObjectEntry::CONTAINER_ENTRY &&
+			nextElement->type != ObjectEntry::ARRAY_ENTRY
+		) {
 			continue;
 		}
 		
