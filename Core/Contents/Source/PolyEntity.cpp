@@ -223,6 +223,14 @@ unsigned int Entity::getNumChildren() {
 	return children.size();
 }
 
+void Entity::deleteChildren() {
+	for(int i=0; i < children.size(); i++) {
+		children[i]->deleteChildren();
+		delete children[i];
+	}
+	children.clear();
+}
+
 Entity *Entity::getChildAtIndex(unsigned int index) {
 	if(index < children.size()) {
 		return children[index];
