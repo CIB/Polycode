@@ -25,6 +25,7 @@
 #include "PolycodeEditor.h"
 #include <PolycodeUI.h>
 #include <Polycode.h>
+#include <PolyUILoader.h>
 
 using namespace Polycode;
 
@@ -42,7 +43,7 @@ protected:
 	void clearSelection();
 	void updateSelection(ScreenEntity *entity);
 	void updateSelection(Entity *entity);
-	void updateTree(UITree *treeNode, Entity *entity);
+	void updateTree(UILoader* loader, UITree *treeNode, Entity *entity);
 
 	UIElement selection;
 

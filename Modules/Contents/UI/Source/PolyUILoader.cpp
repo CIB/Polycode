@@ -25,6 +25,10 @@
 
 using namespace Polycode;
 
+UILoader::UILoader() {
+	rootDocument = NULL;
+}
+
 Number UILoader::readNumberOrError(ObjectEntry *from, String key, String errorWhere) {
 	Number rval = -1;
 	bool result = from->readNumber(key, &rval);
@@ -98,14 +102,21 @@ UIBox* UILoader::buildBox(ObjectEntry *data) {
 }
 
 UIElement* UILoader::loadObject(Object *object) {
-	if(object->root.name != "Elements") {
+	rootDocument = object; // TODO: deepcopy object into rootDocument to avoid
+						   // memory management issues
+	if(rootDocument->root.name != "Elements") {
 		throw UILoaderError("XML Document contains no UI elements.");
 	}
+
+	entriesByEntities.clear();
+	entitiesByEntries.clear();
 
 	// An empty root container to store all children in.
 	UIElement *rootContainer = new UIElement();
 
-	loadObjectEntry(&object->root, rootContainer);
+	loadObjectEntry(&rootDocument->root, rootContainer);
+	entriesByEntities[rootContainer] = &rootDocument->root;
+	entitiesByEntries[&rootDocument->root] = rootContainer;
 
 	return rootContainer;
 }
@@ -155,5 +166,16 @@ UIElement* UILoader::loadObjectEntry(ObjectEntry *node, Entity* parent) {
 		// and add them as children of the child.
 		loadObjectEntry(nextElement, child);
 		parent->addChild(child);
+
+		entriesByEntities[child] = nextElement;
+		entitiesByEntries[nextElement] = child;
 	}
+}
+
+Entity* UILoader::getLoadedEntity(ObjectEntry *entry) {
+	return this->entitiesByEntries[entry];
+}
+
+ObjectEntry* UILoader::getLoadedFrom(Entity* entity) {
+	return this->entriesByEntities[entity];
 }

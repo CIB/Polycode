@@ -40,7 +40,7 @@ PolycodeUIEditor::~PolycodeUIEditor() {
 	delete uiTree;
 }
 
-void PolycodeUIEditor::updateTree(UITree *treeNode, Entity *entity) {
+void PolycodeUIEditor::updateTree(UILoader *loader, UITree *treeNode, Entity *entity) {
 	String label = entity->id;
 	if(label == "") {
 		label = "Unknown";
@@ -51,27 +51,27 @@ void PolycodeUIEditor::updateTree(UITree *treeNode, Entity *entity) {
 	
 	for(int i=0; entity->getChildAtIndex(i); i++) {
 		Entity *child = entity->getChildAtIndex(i);
-		/*if(child->getNumChildren() == 0 && child->id == "") {
-			// Don't add stuff with no ID and no children
-			return;
-		}*/
-		updateTree(treeNode->addTreeChild("box_icon.png", "", NULL), child);
+		if(loader->getLoadedFrom(child)) {
+			// Only display nodes that were loaded from an UI definition.
+			updateTree(loader, treeNode->addTreeChild("box_icon.png", "", NULL), child);
+		}
 	}
 }
 
 bool PolycodeUIEditor::openFile(OSFileEntry filePath) {
 	isLoading = true;
 	
-	if(uiDef.loadFromXML(filePath.fullPath)) {
-		UILoader loader; 
-		root = loader.loadObject(&uiDef);
-		if(root->id == "") {
-			root->id = "Root";
-		}
+	if(!uiDef.loadFromXML(filePath.fullPath)) {
+		return false;
+	}
+	UILoader loader; 
+	root = loader.loadObject(&uiDef);
+	if(root->id == "") {
+		root->id = "Root";
 	}
 
 	UITree *rootNode = uiTree->getRootNode();
-	updateTree(rootNode, root);
+	updateTree(&loader, rootNode, root);
 
 	root->setPosition(100, 100);
 	addChild(root);

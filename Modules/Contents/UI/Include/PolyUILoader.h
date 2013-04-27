@@ -26,6 +26,7 @@
 #include "tinyxml.h"
 #include "PolycodeUI.h"
 #include <stdexcept>
+#include <map>
 
 namespace Polycode {
 
@@ -42,7 +43,25 @@ namespace Polycode {
 
     class _PolyExport UILoader {
 	public:
+		UILoader();
+
 		UIElement* loadObject(Object *doc);
+
+		/**
+		 * Get the Entity that was loaded from the entry. NULL if none.
+		 *
+		 * @param entry The entry that the returned Entity was loaded from.
+		 */
+		Entity* getLoadedEntity(ObjectEntry *entry);
+
+		/**
+		 * Get the Object that the entity was loaded from, or NULL if none.
+		 *
+		 * @param entity The entity that we want to know the entry of.
+		 */
+		ObjectEntry *getLoadedFrom(Entity *entity);
+
+		Object *rootDocument;
 	protected:
 		Number readNumberNonNegativeOrError(ObjectEntry *from, String key, String errorWhere);
 		Number readNumberOrError(ObjectEntry *from, String key, String errorWhere);
@@ -51,5 +70,8 @@ namespace Polycode {
         UIButton* buildButton(ObjectEntry *data);
         UIBox* buildBox(ObjectEntry *data);
 		UIElement* loadObjectEntry(ObjectEntry *node, Entity* parent);
+
+		std::map<Entity*, ObjectEntry*> entriesByEntities;
+		std::map<ObjectEntry*, Entity*> entitiesByEntries;
     };
 }
