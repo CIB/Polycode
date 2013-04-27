@@ -26,9 +26,37 @@
 
 PolycodeUIEditor::PolycodeUIEditor() : PolycodeEditor(true) {
 	editorType = "PolycodeUIEditor";
+	uiTree = new UITreeContainer("boxIcon.png", "Structure", 400, 400);
+	uiTree->setPosition(500, 10);
+	addChild(uiTree);
+
+	selection.setPosition(0, 0);
+	addChild(&selection);
+
+	uiTree->addEventListener(this, InputEvent::EVENT_MOUSEUP);
 }
 
 PolycodeUIEditor::~PolycodeUIEditor() {
+	delete uiTree;
+}
+
+void PolycodeUIEditor::updateTree(UITree *treeNode, Entity *entity) {
+	String label = entity->id;
+	if(label == "") {
+		label = "Unknown";
+	}
+	treeNode->setLabelText(entity->id);
+	treeNode->setUserData(entity);
+	treeNode->clearTree();
+	
+	for(int i=0; entity->getChildAtIndex(i); i++) {
+		Entity *child = entity->getChildAtIndex(i);
+		/*if(child->getNumChildren() == 0 && child->id == "") {
+			// Don't add stuff with no ID and no children
+			return;
+		}*/
+		updateTree(treeNode->addTreeChild("box_icon.png", "", NULL), child);
+	}
 }
 
 bool PolycodeUIEditor::openFile(OSFileEntry filePath) {
@@ -37,10 +65,19 @@ bool PolycodeUIEditor::openFile(OSFileEntry filePath) {
 	if(uiDef.loadFromXML(filePath.fullPath)) {
 		UILoader loader; 
 		root = loader.loadObject(&uiDef);
+		if(root->id == "") {
+			root->id = "Root";
+		}
 	}
+
+	UITree *rootNode = uiTree->getRootNode();
+	updateTree(rootNode, root);
 
 	root->setPosition(100, 100);
 	addChild(root);
+
+	// Make sure selection is still rendered on top.
+	moveChildTop(&selection);
 	
 	PolycodeEditor::openFile(filePath);
 	
@@ -58,6 +95,52 @@ void PolycodeUIEditor::Resize(int x, int y) {
 	PolycodeEditor::Resize(x,y);
 }
 
+void PolycodeUIEditor::clearSelection() {
+	selection.deleteChildren();
+}
+
+void PolycodeUIEditor::updateSelection(ScreenEntity *entity) {
+	clearSelection();
+	int border = 5;
+	UIBox *leftBox = new UIBox("Images/boxIcon.png", 0, 0, 0, 0, border, entity->getHeight());	
+	leftBox->setPosition(entity->getScreenPosition().x - selection.getScreenPosition().x, entity->getScreenPosition().y - selection.getScreenPosition().y);
+	
+	UIBox *rightBox = new UIBox("Images/boxIcon.png", 0, 0, 0, 0, 5, entity->getHeight());
+	rightBox->setPosition(entity->getScreenPosition().x - selection.getScreenPosition().x + entity->getWidth() - border, entity->getScreenPosition().y - selection.getScreenPosition().y);
+		
+	UIBox *topBox = new UIBox("Images/boxIcon.png", 0, 0, 0, 0, entity->getWidth(), 5);
+	topBox->setPosition(entity->getScreenPosition().x - selection.getScreenPosition().x, entity->getScreenPosition().y - selection.getScreenPosition().y );
+	
+	UIBox *bottomBox = new UIBox("Images/boxIcon.png", 0, 0, 0, 0, entity->getWidth(), 5);
+	bottomBox->setPosition(entity->getScreenPosition().x - selection.getScreenPosition().x, entity->getScreenPosition().y - selection.getScreenPosition().y + entity->getHeight() - border);
+	
+	selection.addChild(leftBox);
+	selection.addChild(rightBox);
+	selection.addChild(topBox);
+	selection.addChild(bottomBox);
+
+}
+
+void PolycodeUIEditor::updateSelection(Entity *entity) {
+	clearSelection();
+}
+
 void PolycodeUIEditor::handleEvent(Event *event) {
+	if(event->getDispatcher() == uiTree) {
+		if(event->getEventCode() == InputEvent::EVENT_MOUSEUP) {	
+			UITree* selected = uiTree->getRootNode()->getSelectedNode();
+			if(!selected) return;
+			Entity* selectedEntity = (Entity*) selected->getUserData();
+			if(!selectedEntity) return;
+			
+			ScreenEntity* selectedScreenEntity = dynamic_cast<ScreenEntity*>(selectedEntity);
+			if(selectedScreenEntity) {
+				updateSelection(selectedScreenEntity);
+			} else {
+				updateSelection(selectedEntity);
+			}
+		}
+	}
+
 	PolycodeEditor::handleEvent(event);
 }

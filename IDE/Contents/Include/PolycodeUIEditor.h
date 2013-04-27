@@ -38,10 +38,19 @@ public:
 	void saveFile();
 	
 	void handleEvent(Event *event);
-	
 protected:
+	void clearSelection();
+	void updateSelection(ScreenEntity *entity);
+	void updateSelection(Entity *entity);
+	void updateTree(UITree *treeNode, Entity *entity);
+
+	UIElement selection;
+
 	// Container for all children of the UI
 	UIElement *root;
+
+	// Tree container displaying the UI structure
+	UITreeContainer *uiTree;
 
 	// Definition of the UI as Object
 	Object uiDef;
