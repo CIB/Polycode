@@ -27,7 +27,7 @@
 PolycodeUIEditor::PolycodeUIEditor() : PolycodeEditor(true) {
 	editorType = "PolycodeUIEditor";
 	uiTree = new UITreeContainer("boxIcon.png", "Structure", 400, 400);
-	uiTree->setPosition(500, 10);
+	uiTree->setPosition(this->getWidth() - uiTree->getWidth() - 5, 10);
 	addChild(uiTree);
 
 	selection.setPosition(0, 0);
@@ -73,7 +73,10 @@ bool PolycodeUIEditor::openFile(OSFileEntry filePath) {
 	UITree *rootNode = uiTree->getRootNode();
 	updateTree(&loader, rootNode, root);
 
-	root->setPosition(100, 100);
+	int border = 5;
+	root->setPosition(border, border);
+	root->setWidth(this->getWidth() - 4*border - uiTree->getWidth());
+	root->setHeight(this->getHeight() - 2*border);
 	addChild(root);
 
 	// Make sure selection is still rendered on top.
@@ -91,7 +94,11 @@ void PolycodeUIEditor::saveFile() {
 }
 
 void PolycodeUIEditor::Resize(int x, int y) {
-	//root->Resize(x, y);
+	// TODO: for some reason the position of the child elements of root isn't updated
+	int border = 5;
+	this->setWidth(x); this->setHeight(y);
+	uiTree->setPosition(this->getWidth() - uiTree->getWidth() - 5, 10);
+	root->Resize(this->getWidth() - 4*border - uiTree->getWidth(), this->getHeight() - 2*border);
 	PolycodeEditor::Resize(x,y);
 }
 
