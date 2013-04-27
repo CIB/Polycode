@@ -40,18 +40,30 @@ public:
 	
 	void handleEvent(Event *event);
 protected:
+	ScreenEntity* selectAt(ScreenEntity* parent, Vector2 mousePosition);
 	void clearSelection();
 	void updateSelection(ScreenEntity *entity);
 	void updateSelection(Entity *entity);
-	void updateTree(UILoader* loader, UITree *treeNode, Entity *entity);
+	void updateTree(UITree *treeNode, Entity *entity);
 
 	UIElement selection;
+	Entity *selectedEntity;
+
+	// Property inspector
+	UIBox *propertyBgBox;
+	UITextInput *input;
 
 	// Container for all children of the UI
 	UIElement *root;
 
 	// Tree container displaying the UI structure
 	UITreeContainer *uiTree;
+
+	// Will store data about how entities currently
+	// on the screen relate to XML nodes.
+	// Useful for dynamically updating XML nodes
+	// the moment something changes.
+	UILoader loader; 
 
 	// Definition of the UI as Object
 	Object uiDef;

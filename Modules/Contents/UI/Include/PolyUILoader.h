@@ -61,6 +61,23 @@ namespace Polycode {
 		 */
 		ObjectEntry *getLoadedFrom(Entity *entity);
 
+		/**
+		 * Get a vector containing all the entities loaded by this loader.
+		 */
+		std::vector<Entity*> *getAllLoadedEntities();
+
+		/**
+		 * Destroy the screen entity currently associated with
+		 * the given object entry, and reload that entry.
+		 */
+		ScreenEntity* reloadObjectEntry(ObjectEntry* node);
+
+		/**
+		 * Delete all child entities of an entity that were loaded
+		 * using this loader.
+		 */
+		void deleteAllLoadedChildren(Entity* entity);
+
 		Object *rootDocument;
 	protected:
 		Number readNumberNonNegativeOrError(ObjectEntry *from, String key, String errorWhere);
@@ -69,7 +86,8 @@ namespace Polycode {
 
         UIButton* buildButton(ObjectEntry *data);
         UIBox* buildBox(ObjectEntry *data);
-		UIElement* loadObjectEntry(ObjectEntry *node, Entity* parent);
+		void loadObjectEntries(ObjectEntry *parentNode, Entity* parent);
+		ScreenEntity* loadObjectEntry(ObjectEntry *node, Entity* parent);
 
 		std::map<Entity*, ObjectEntry*> entriesByEntities;
 		std::map<ObjectEntry*, Entity*> entitiesByEntries;

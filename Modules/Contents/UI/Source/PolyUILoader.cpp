@@ -114,62 +114,94 @@ UIElement* UILoader::loadObject(Object *object) {
 	// An empty root container to store all children in.
 	UIElement *rootContainer = new UIElement();
 
-	loadObjectEntry(&rootDocument->root, rootContainer);
+	loadObjectEntries(&rootDocument->root, rootContainer);
 	entriesByEntities[rootContainer] = &rootDocument->root;
 	entitiesByEntries[&rootDocument->root] = rootContainer;
 
 	return rootContainer;
 }
 
-UIElement* UILoader::loadObjectEntry(ObjectEntry *node, Entity* parent) {
-	for(int i=0; i < node->children.size(); i++)
+ScreenEntity* UILoader::loadObjectEntry(ObjectEntry *node, Entity *parent) {
+	String elementType = node->name;
+	ScreenEntity* child;
+		
+	if(elementType == "Button") {
+		child = buildButton(node);
+	} else if(elementType == "Box") {
+		child = buildBox(node);
+	} else {
+		throw UILoaderError("Element of unknown type.");
+	}
+
+	// Do some generic UIElement updates from data
+	String elementTag;
+	bool result = node->readString("id", &elementTag);
+	if(result) {
+		child->id = String(elementTag);
+	}
+
+	Number xPos, yPos = -1;
+	result = node->readNumber("xPos", &xPos);
+	if(!result) {
+		throw UILoaderError("Button XML node has no xPos attribute of type Number.");
+	}
+
+	result = node->readNumber("yPos", &yPos);
+	if(!result) {
+		throw UILoaderError("Button XML node has no yPos attribute of type Number.");
+	}
+	child->setPosition(xPos, yPos);
+
+	// Recursively search the child element for grandchildren,
+	// and add them as children of the child.
+	loadObjectEntries(node, child);
+	parent->addChild(child);
+
+	entriesByEntities[child] = node;
+	entitiesByEntries[node] = child;
+
+	return child;
+}
+
+void UILoader::loadObjectEntries(ObjectEntry *parentNode, Entity *parent) {
+	for(int i=0; i < parentNode->children.size(); i++)
 	{
-		ObjectEntry* nextElement = node->children[i];
+		ObjectEntry* nextElement = parentNode->children[i];
 		if( // If the child is an attribute, rather than a tag, skip it.
 			nextElement->type != ObjectEntry::CONTAINER_ENTRY &&
 			nextElement->type != ObjectEntry::ARRAY_ENTRY
 		) {
 			continue;
 		}
-		
-		String elementType = nextElement->name;
-		ScreenEntity *child = NULL;
-		
-		if(elementType == "Button") {
-			child = buildButton(nextElement);
-		} else if(elementType == "Box") {
-			child = buildBox(nextElement);
-		} else {
-			throw UILoaderError("Element of unknown type.");
-		}
 
-		// Do some generic UIElement updates from data
-		String elementTag;
-		bool result = nextElement->readString("id", &elementTag);
-		if(result) {
-			child->id = String(elementTag);
-		}
-
-		Number xPos, yPos = -1;
-		result = nextElement->readNumber("xPos", &xPos);
-		if(!result) {
-			throw UILoaderError("Button XML node has no xPos attribute of type Number.");
-		}
-
-		result = nextElement->readNumber("yPos", &yPos);
-		if(!result) {
-			throw UILoaderError("Button XML node has no yPos attribute of type Number.");
-		}
-		child->setPosition(xPos, yPos);
-
-		// Recursively search the child element for grandchildren,
-		// and add them as children of the child.
-		loadObjectEntry(nextElement, child);
-		parent->addChild(child);
-
-		entriesByEntities[child] = nextElement;
-		entitiesByEntries[nextElement] = child;
+		loadObjectEntry(nextElement, parent);
 	}
+}
+
+void UILoader::deleteAllLoadedChildren(Entity* entity) {
+	for(int i=0; i<entity->getNumChildren(); i++) {
+		Entity* child = entity->getChildAtIndex(i);
+		if(entriesByEntities[child]) {
+			deleteAllLoadedChildren(child);
+			delete child;
+			entity->removeChild(child);
+			i--; // Hack to avoid breaking the iterator
+		}
+	}
+}
+
+ScreenEntity* UILoader::reloadObjectEntry(ObjectEntry* node) {
+	Entity* toReplace = this->getLoadedEntity(node);
+	if(!toReplace) return NULL;
+	
+	// TODO: cleanly remove all children of toReplace
+	// from entriesByEntities
+	this->deleteAllLoadedChildren(toReplace);
+	Entity* parent = toReplace->getParentEntity();
+	parent->removeChild(toReplace);
+	delete toReplace;
+
+	return loadObjectEntry(node, parent);
 }
 
 Entity* UILoader::getLoadedEntity(ObjectEntry *entry) {
@@ -178,4 +210,12 @@ Entity* UILoader::getLoadedEntity(ObjectEntry *entry) {
 
 ObjectEntry* UILoader::getLoadedFrom(Entity* entity) {
 	return this->entriesByEntities[entity];
+}
+
+std::vector<Entity*> *UILoader::getAllLoadedEntities() {
+	std::vector<Entity*> *rval = new std::vector<Entity*>();
+	for(std::map<Entity*, ObjectEntry*>::iterator i = entriesByEntities.begin(); i != entriesByEntities.end(); i++) {
+		rval->push_back(i->first);
+	}
+	return rval;
 }
