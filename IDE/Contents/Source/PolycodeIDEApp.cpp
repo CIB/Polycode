@@ -21,6 +21,7 @@
 */
 
 #include "PolycodeIDEApp.h"
+#include "PolycodeUIEditor.h"
 
 
 using namespace Polycode;
@@ -127,6 +128,7 @@ PolycodeIDEApp::PolycodeIDEApp(PolycodeView *view) : EventDispatcher() {
 	editorManager->registerEditorFactory(new PolycodeScreenEditorFactory());	
 	editorManager->registerEditorFactory(new PolycodeFontEditorFactory());
 	editorManager->registerEditorFactory(new PolycodeTextEditorFactory());
+	editorManager->registerEditorFactory(new PolycodeUIEditorFactory());
 	editorManager->registerEditorFactory(new PolycodeProjectEditorFactory(projectManager));
 	editorManager->registerEditorFactory(new PolycodeSpriteEditorFactory());
 

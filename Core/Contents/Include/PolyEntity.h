@@ -193,7 +193,12 @@ namespace Polycode {
 			* @return Number of child entities.
 			*/
 			unsigned int getNumChildren();
-			
+
+			/**
+			 * Recursively deletes all children.
+			 */
+			void deleteChildren();
+
 			/**
 			* Returns the child entity at specified index.
 			* @param index Index to return entity at.
