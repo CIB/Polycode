@@ -101,6 +101,24 @@ UIBox* UILoader::buildBox(ObjectEntry *data) {
     return rval;
 }
 
+vector<ObjectEntry> UILoader::getTypeAttributes(String type) {
+	std::vector<ObjectEntry> rval;
+	if(type == "Box") {
+		ObjectEntry obj;
+		obj.name = "xPos"; obj.type = ObjectEntry::INT_ENTRY; obj.intVal = 10; rval.push_back(obj);
+		obj.name = "yPos"; obj.type = ObjectEntry::INT_ENTRY; obj.intVal = 10; rval.push_back(obj);
+		obj.name = "width"; obj.type = ObjectEntry::INT_ENTRY; obj.intVal = 10; rval.push_back(obj);
+		obj.name = "height"; obj.type = ObjectEntry::INT_ENTRY; obj.intVal = 10; rval.push_back(obj);
+		obj.name = "borderTop"; obj.type = ObjectEntry::INT_ENTRY; obj.intVal = 10; rval.push_back(obj);
+		obj.name = "borderBottom"; obj.type = ObjectEntry::INT_ENTRY; obj.intVal = 10; rval.push_back(obj);
+		obj.name = "borderLeft"; obj.type = ObjectEntry::INT_ENTRY; obj.intVal = 10; rval.push_back(obj);
+		obj.name = "borderRight"; obj.type = ObjectEntry::INT_ENTRY; obj.intVal = 10; rval.push_back(obj);
+		obj.name = "image"; obj.type = ObjectEntry::STRING_ENTRY; obj.stringVal = ""; rval.push_back(obj);
+		obj.name = "id"; obj.type = ObjectEntry::STRING_ENTRY; obj.stringVal = ""; rval.push_back(obj);
+	}
+	return rval;
+}
+
 UIElement* UILoader::loadObject(Object *object) {
 	rootDocument = object; // TODO: deepcopy object into rootDocument to avoid
 						   // memory management issues

@@ -78,6 +78,14 @@ namespace Polycode {
 		 */
 		void deleteAllLoadedChildren(Entity* entity);
 
+		/**
+		 * Get a list of valid attributes for a specific Element type.
+		 *
+		 * Returned ObjectEntry's will represent the name of the attribute,
+		 * the valid type, and the default value.
+		 */
+		vector<ObjectEntry> getTypeAttributes(String type);
+
 		Object *rootDocument;
 	protected:
 		Number readNumberNonNegativeOrError(ObjectEntry *from, String key, String errorWhere);

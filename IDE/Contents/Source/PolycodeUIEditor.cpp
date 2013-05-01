@@ -169,31 +169,51 @@ void PolycodeUIEditor::updateSelection(ScreenEntity *entity) {
 			i--; // Hack to avoid breaking the iterator
 		}
 	}
+
+	// Iterate over all the attributes for the selected entity's type,
+	// and display a way to change each attribute.
 	int row = 0;
 	int column = 0;
-	for(int i = 0; i < entry->children.size(); i++) {
-		ObjectEntry *childEntry = entry->children[i];
+	vector<ObjectEntry> entries = loader.getTypeAttributes(entry->name);
+	for(int i = 0; i < entries.size(); i++) {
+		ObjectEntry& attribute = entries[i];
 
-		if(childEntry->type == ObjectEntry::INT_ENTRY) {
-			ScreenLabel *label = new ScreenLabel(childEntry->name, fontSize, fontName, Label::ANTIALIAS_FULL);
-			label->setColor(1.0, 1.0, 1.0, 0.5);
-			label->setPosition(5 + 80 * column, 4 + 40*row);
-			label->id = "property_input";
-			propertyBgBox->addChild(label);
+		ScreenLabel *label = new ScreenLabel(attribute.name, fontSize, fontName, Label::ANTIALIAS_FULL);
+		label->setColor(1.0, 1.0, 1.0, 0.5);
+		label->setPosition(5 + 80 * column, 4 + 40*row);
+		label->id = "property_input";
+		propertyBgBox->addChild(label);
 
-			UITextInput* input = new UITextInput(false, 60, 12);
-			input->setNumberOnly(true);
-			input->setPosition(5 + 80 * column, 20+40*row);
-			input->setText(String::IntToString(childEntry->intVal));
-			input->setUserData(childEntry);
-			input->id = "property_input";
-			propertyBgBox->addChild(input);
+		ObjectEntry *childAttribute = (*entry)[attribute.name];
 
-			row++;
-			if(row * 40 + 20 > propertyBgBox->getHeight()) {
-				row = 0;
-				column++;
+		// Create a new input for this attribute.
+		UITextInput* input = new UITextInput(false, 60, 12);
+		
+		// Set the input contents based on either the current value,
+		// or the default value.
+		if(attribute.type == ObjectEntry::INT_ENTRY) {
+			if(!childAttribute) {
+				childAttribute = entry->addChild(attribute.name, attribute.intVal);
 			}
+			
+			input->setNumberOnly(true);
+			input->setText(String::IntToString(childAttribute->intVal));
+		} else if(attribute.type == ObjectEntry::STRING_ENTRY) {
+			if(!childAttribute) {
+				childAttribute = entry->addChild(attribute.name, attribute.stringVal);
+			}
+			
+			input->setText(childAttribute->stringVal);
+		}
+		input->setPosition(5 + 80 * column, 20+40*row);
+		input->setUserData(childAttribute);
+		input->id = "property_input";
+		propertyBgBox->addChild(input);
+
+		row++;
+		if(row * 40 + 20 > propertyBgBox->getHeight()) {
+			row = 0;
+			column++;
 		}
 	}
 }
@@ -259,6 +279,12 @@ void PolycodeUIEditor::handleEvent(Event *event) {
 				if(attribute->intVal != newValue) {
 					somethingChanged = true;
 					attribute->intVal = newValue;
+				}
+			} else if(attribute->type == ObjectEntry::STRING_ENTRY) {
+				String newValue = input->getText();
+				if(attribute->stringVal != newValue) {
+					somethingChanged = true;
+					attribute->stringVal = newValue;
 				}
 			}
 		}

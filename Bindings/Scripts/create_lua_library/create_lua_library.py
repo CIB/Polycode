@@ -209,7 +209,7 @@ def createLUABindings(inputPath, prefix, mainInclude, libSmallName, libName, api
 					luaDocOut += "\t\t<desc><![CDATA[%s]]></desc>\n" % (cleanDocs(c['doxygen']))
 
 				parsed_methods = [] # Def: List of discovered methods
-				ignore_methods = ["readByte32", "readByte16", "getCustomEntitiesByType", "Core", "Renderer", "Shader", "Texture", "handleEvent", "secondaryHandler", "getSTLString", "readInt", "getAllLoadedEntities"]
+				ignore_methods = ["readByte32", "readByte16", "getCustomEntitiesByType", "Core", "Renderer", "Shader", "Texture", "handleEvent", "secondaryHandler", "getSTLString", "readInt", "getAllLoadedEntities", "getTypeAttributes"]
 				luaClassBindingOut += "\n\n"
 
 				luaDocOut += "\t\t<static_members>\n"
