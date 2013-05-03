@@ -32,6 +32,11 @@ ShaderProgram::~ShaderProgram() {
 
 }
 
+void ShaderProgram::reloadResource() {
+	reloadProgram();
+	Resource::reloadResource();	
+}
+
 ProgramParam ShaderProgram::addParam(const String& name, const String& typeString, const String& valueString, bool isAuto, int autoID, int paramType, void *defaultData, void *minData, void *maxData) {
 	ProgramParam newParam;
 	newParam.name = name;

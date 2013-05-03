@@ -356,6 +356,47 @@ vector<OSFileEntry> OSBasics::parseFolder(const String& pathString, bool showHid
 	return returnVector;
 }
 
+time_t OSBasics::getFileTime(const Polycode::String& pathString) {
+
+	String realString;
+	if(PHYSFS_exists(pathString.c_str())) {
+		realString = String(PHYSFS_getRealDir(pathString.c_str())) + "/" + pathString;
+	} else {
+		realString = pathString;
+	}
+
+#ifdef _WINDOWS
+	WCHAR tmp[4096];
+	memset(tmp, 0, sizeof(WCHAR)*4096);
+	ctow(tmp, pathString.c_str());
+	HANDLE hFile = CreateFile(tmp, GENERIC_READ, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
+								NULL, OPEN_EXISTING, 0, NULL);
+								
+	if(hFile == INVALID_HANDLE_VALUE) {
+		return 0;
+	}
+
+	FILETIME lastModifyTime;
+	BOOL result = GetFileTime(hFile, NULL, NULL, &lastModifyTime);
+	if(!result) {
+		return 0;
+	} else {
+		ULARGE_INTEGER ull;
+		ull.LowPart = lastModifyTime.dwLowDateTime;
+		ull.HighPart = lastModifyTime.dwHighDateTime;
+		return ull.QuadPart / 10000000ULL - 11644473600ULL;
+	}
+#else
+	struct stat statbuf;
+	int retVal = stat(realString.c_str(), &statbuf);
+	if (retVal == 0) {
+		return statbuf.st_mtime;
+	} else {
+		return 0;
+	}
+#endif
+}
+
 void OSBasics::removeItem(const String& pathString) {
 #ifdef _WINDOWS
 	 String _tmp = pathString.replace("/", "\\");

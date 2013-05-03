@@ -130,6 +130,9 @@ class PolycodeScreenEditorMain : public UIElement {
 		void createSoundRef(ScreenSound *target);
 		void createEntityRef(ScreenEntity *entity);
 		
+		void setRefVisibility(bool val);
+		void setEntityRefVisibility(ScreenEntity *entity, bool val);
+		
 		void getCenterAndSizeForSelected(Vector2 *center, Number *width, Number *height);
 	
 		void handleMouseDown(Vector2 position);
@@ -225,6 +228,7 @@ class PolycodeScreenEditorMain : public UIElement {
 		int lastMode;
 		
 		Vector2 basePanPosition;
+		Vector2 zoomBasePosition;
 		
 		Number baseZoomScale;
 		
@@ -274,6 +278,8 @@ class PolycodeScreenEditorMain : public UIElement {
 		
 		UICheckBox *pixelSnapBox;
 		UICheckBox *gridSnapBox;
+		
+		UICheckBox *showRefsBox;
 		
 		UITextInput *scaleInput;
 		

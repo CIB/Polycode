@@ -24,12 +24,18 @@
 
 using namespace Polycode;
 
-Resource::Resource(int type) {
+Resource::Resource(int type) : EventDispatcher() {
 	this->type = type;
+	reloadOnFileModify = false;
+	resourceFileTime = 0;
 }
 
 Resource::~Resource() {
 
+}
+
+void Resource::reloadResource() {
+	dispatchEvent(new Event(), Event::RESOURCE_RELOAD_EVENT);
 }
 
 const String& Resource::getResourceName() const {

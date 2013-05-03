@@ -821,6 +821,8 @@ void ScreenEntityInstanceProp::handleEvent(Event *event) {
 		propContents->removeChild(previewInstance);
 		delete previewInstance;
 		previewInstance = new ScreenEntityInstance(filePath);
+		previewInstance->getResourceEntry()->reloadOnFileModify = true;
+		CoreServices::getInstance()->getResourceManager()->addResource(previewInstance->getResourceEntry());
 		previewInstance->setPosition(24, 24);
 		
 		Number radius = previewInstance->getCompoundBBoxRadius();
@@ -1747,6 +1749,7 @@ void ScreenImageSheet::handleEvent(Event *event) {
 		Texture *selectedTexture = texture->previewShape->getTexture();
 		
 		image->setTexture(selectedTexture);
+		selectedTexture->reloadOnFileModify = true;
 		image->setShapeSize(selectedTexture->getWidth(), selectedTexture->getHeight());
 		dispatchEvent(new Event(), Event::CHANGE_EVENT);
 	}
@@ -1849,7 +1852,9 @@ void ScreenEntityInstanceSheet::handleEvent(Event *event) {
 	if(event->getDispatcher() == instanceProp) {
 
 		instance->loadFromFile(instanceProp->get());
-
+		instance->getResourceEntry()->setResourcePath(instanceProp->get());
+		instance->getResourceEntry()->setResourceName(instanceProp->get());
+		
 		dispatchEvent(new Event(), Event::CHANGE_EVENT);
 	}
 

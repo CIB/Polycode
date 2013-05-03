@@ -40,6 +40,8 @@ using namespace Polycode;
 
 ResourceManager::ResourceManager() {
 	PHYSFS_init(NULL);
+	ticksSinceCheck = 0;
+	reloadResourcesOnModify = false;
 }
 
 ResourceManager::~ResourceManager() {
@@ -63,7 +65,7 @@ void ResourceManager::parseShaders(const String& dirPath, bool recursive) {
 				
 				for(int s=0; s < shaders.size(); s++) {
 					shaders[s]->setResourceName(shaders[s]->getName());
-					resources.push_back(shaders[s]);
+					addResource(shaders[s]);
 					materialManager->addShader(shaders[s]);
 				}
 			}
@@ -89,7 +91,7 @@ void ResourceManager::parsePrograms(const String& dirPath, bool recursive) {
 			if(newProgram) {
 				newProgram->setResourceName(resourceDir[i].name);
 				newProgram->setResourcePath(resourceDir[i].fullPath);
-				resources.push_back(newProgram);					
+				addResource(newProgram);					
 			}			
 		} else {
 			if(recursive)
@@ -110,7 +112,7 @@ void ResourceManager::parseMaterials(const String& dirPath, bool recursive) {
 
 				for(int m=0; m < materials.size(); m++) {
 					materials[m]->setResourceName(materials[m]->getName());
-					resources.push_back(materials[m]);
+					addResource(materials[m]);
 					materialManager->addMaterial(materials[m]);
 				}
 			}
@@ -142,7 +144,7 @@ void ResourceManager::parseCubemaps(const String& dirPath, bool recursive) {
 							Cubemap *newMat = CoreServices::getInstance()->getMaterialManager()->cubemapFromXMLNode(pChild);
 							//						newMat->setResourceName(newMat->getName());
 							if(newMat)
-								resources.push_back(newMat);
+								addResource(newMat);
 						}
 					}
 				}
@@ -156,7 +158,18 @@ void ResourceManager::parseCubemaps(const String& dirPath, bool recursive) {
 
 void ResourceManager::addResource(Resource *resource) {
 	resources.push_back(resource);
+	resource->resourceFileTime = OSBasics::getFileTime(resource->getResourcePath());
 }
+
+void ResourceManager::removeResource(Resource *resource) {
+	for(int i=0;i<resources.size();i++) {
+		if(resources[i] == resource) {
+			resources.erase(resources.begin()+i);
+			return;
+		}
+	}	
+}
+
 
 void ResourceManager::parseTextures(const String& dirPath, bool recursive, const String& basePath) {
 	MaterialManager *materialManager = CoreServices::getInstance()->getMaterialManager();
@@ -169,11 +182,13 @@ void ResourceManager::parseTextures(const String& dirPath, bool recursive, const
 				Texture *t = materialManager->createTextureFromFile(resourceDir[i].fullPath, materialManager->clampDefault, materialManager->mipmapsDefault);
 				if(t) {
 					if(basePath == "") {
-						t->setResourceName(resourceDir[i].name);					
+						t->setResourceName(resourceDir[i].name);
+						t->setResourcePath(resourceDir[i].fullPath);
 					} else {
 						t->setResourceName(basePath+"/"+resourceDir[i].name);
+						t->setResourcePath(resourceDir[i].fullPath);						
 					}
-					resources.push_back(t);
+					addResource(t);
 				}
 			}
 		} else {
@@ -243,6 +258,30 @@ Resource *ResourceManager::getResource(int resourceType, const String& resourceN
 	Logger::log("return NULL\n");
 	// need to add some sort of default resource for each type
 	return NULL;
+}
+
+void ResourceManager::checkForChangedFiles() {
+	for(int i=0; i < resources.size(); i++) {
+		if(resources[i]->reloadOnFileModify == true) {
+			time_t newFileTime = OSBasics::getFileTime(resources[i]->getResourcePath());
+//			printf("%s\n%lld %lld\n", resources[i]->getResourcePath().c_str(), newFileTime, resources[i]->resourceFileTime);
+			if(newFileTime != resources[i]->resourceFileTime) {
+				resources[i]->reloadResource();
+				resources[i]->resourceFileTime = newFileTime;
+			}
+		}
+	}
+}
+
+void ResourceManager::Update(int elapsed) {
+	if(!reloadResourcesOnModify)
+		return;
+		
+	ticksSinceCheck += elapsed;
+	if(ticksSinceCheck > RESOURCE_CHECK_INTERVAL) {
+		ticksSinceCheck = 0;
+		checkForChangedFiles();
+	}
 }
 
 std::vector<Resource*> ResourceManager::getResources(int resourceType) {
