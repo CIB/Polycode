@@ -37,8 +37,14 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}
 LINK_DIRECTORIES(${POLYCODE_RELEASE_DIR}/Framework/Core/lib
         ${POLYCODE_RELEASE_DIR}/Framework/Modules/lib
         ${POLYCODE_RELEASE_DIR}/Framework/Bindings/Lua/Core/lib)
+<<<<<<< HEAD
+
+# WIN32 makes it build a GUI application on windows(no effect on other platforms)
+ADD_EXECUTABLE(UserProject WIN32 ${userproject_SRCS} ${userproject_HDRS})
+=======
         
 ADD_EXECUTABLE(UserProject ${userproject_SRCS} ${userproject_HDRS})
+>>>>>>> 99b7bd806ff91e6eae7cfb9de216a0615969f4cd
 
  
 IF(MSVC OR MINGW)
@@ -51,9 +57,45 @@ IF(MSVC OR MINGW)
 	INSTALL(FILES ${POLYCODE_RELEASE_DIR}/Framework/Player/Physics2D.pak DESTINATION bin)
 	INSTALL(FILES ${POLYCODE_RELEASE_DIR}/Framework/Player/Physics3D.pak DESTINATION bin)
 
+<<<<<<< HEAD
+	TARGET_LINK_LIBRARIES(UserProject 
+        PolycodeLua_d
+        Polycore_d
+        ${ZLIB_LIBRARIES}
+        ${LUA_LIBRARY}
+        ${OPENGL_LIBRARIES}
+        ${OPENAL_LIBRARY}
+        ${PNG_LIBRARIES}
+        ${FREETYPE_LIBRARIES}
+        ${PHYSFS_LIBRARY}
+        ${OGG_LIBRARY}
+        ${VORBIS_LIBRARY}
+        ${VORBISFILE_LIBRARY}
+        opengl32
+        glu32
+        winmm
+        ws2_32
+		Polycode2DPhysics
+		Polycode3DPhysics
+		PolycodeUI
+		optimized ${BOX2D_RELEASE_LIBRARY}
+		debug ${BOX2D_DEBUG_LIBRARY}
+        optimized ${LIBBULLETMULTITHREADED}
+        optimized ${LIBBULLETSOFTBODY} 
+        optimized ${LIBBULLETDYNAMICS} 
+        optimized ${LIBBULLETCOLLISION}
+        optimized ${LIBBULLETMATH}            
+        debug ${LIBBULLETMULTITHREADED_DEBUG}
+        debug ${LIBBULLETSOFTBODY_DEBUG} 
+        debug ${LIBBULLETDYNAMICS_DEBUG} 
+        debug ${LIBBULLETCOLLISION_DEBUG}
+        debug ${LIBBULLETMATH_DEBUG}  
+     )
+=======
 	
 	TARGET_LINK_LIBRARIES(UserProject Polycore freetype libogg libpng15_static libvorbis libvorbisfile lua5.1 OpenAL32 physfs zlib opengl32 glu32 Winmm)
 
+>>>>>>> 99b7bd806ff91e6eae7cfb9de216a0615969f4cd
  
 ELSEIF(APPLE)
 		MESSAGE("Target system not currently supported.")
