@@ -5,33 +5,45 @@ HelloPolycodeApp::HelloPolycodeApp(PolycodeView *view) {
 	core = new POLYCODE_CORE(view, 640,480,false,false,0,0,90);
 
 	CoreServices::getInstance()->getResourceManager()->addArchive("Resources/default.pak");
-	CoreServices::getInstance()->getResourceManager()->addDirResource("default", false);
-
-	Scene *scene = new Scene();
-	ScenePrimitive *ground = new ScenePrimitive(ScenePrimitive::TYPE_PLANE, 5,5);
-	ground->loadTexture("Resources/green_texture.png");
-	scene->addEntity(ground);
-
-	ScenePrimitive *box = new ScenePrimitive(ScenePrimitive::TYPE_BOX, 1,1,1);
-	box->loadTexture("Resources/pink_texture.png");
-	box->setPosition(0.0, 0.5, 0.0);
-	scene->addEntity(box);
+	CoreServices::getInstance()->getResourceManager()->addDirResource("default", false);	
 	
-	scene->getDefaultCamera()->setPosition(7,7,7);
-	scene->getDefaultCamera()->lookAt(Vector3(0,0,0));
-
+	Screen *screen = new Screen();
+		
+	ScreenShape *shape = new ScreenShape(ScreenShape::SHAPE_RECT, 100, 100);
+	shape->setColor(1.0, 0.0, 0.0, 1.0);
+	shape->setPosition(150,240);
+	screen->addChild(shape);
 }
 
 HelloPolycodeApp::~HelloPolycodeApp() {
 }
 
 bool HelloPolycodeApp::Update() {
-    return core->Update();
+    return core->updateAndRender();
 }
 
+#ifdef _WINDOWS
+#include "windows.h"
+
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+	PolycodeView *view = new PolycodeView(hInstance, nCmdShow, L"Polycode Example");
+	HelloPolycodeApp *app = new HelloPolycodeApp(view);
+
+	MSG Msg;
+	do {
+		if(PeekMessage(&Msg, NULL, 0,0,PM_REMOVE)) {
+			TranslateMessage(&Msg);
+			DispatchMessage(&Msg);
+		}
+	} while(app->Update());
+	return Msg.wParam;
+}
+#else
 int main(int argc, char *argv[]) {
 	PolycodeView *view = new PolycodeView("Hello Polycode!");
 	HelloPolycodeApp *app = new HelloPolycodeApp(view);
 	while(app->Update()) {}
 	return 0;
 }
+#endif
