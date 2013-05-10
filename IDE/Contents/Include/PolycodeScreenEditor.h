@@ -59,6 +59,8 @@ class EntityTreeView : public UIElement {
 		
 		void syncNodeToEntity(UITree *node, Entity *entity);
 		
+		void setRootEntity(ScreenEntity *entity);
+		
 		void Refresh();
 
 		Entity *selectedEntity;
@@ -67,10 +69,11 @@ class EntityTreeView : public UIElement {
 		UIImageButton *newLayerButton;
 		UIImageButton *targetLayerButton;
 		
-		Entity *rootEntity;
 						
 	protected:	
 	
+		Entity *rootEntity;
+			
 		bool dontSendSelectionEvent;
 	
 		UITreeContainer *treeContainer;
@@ -122,6 +125,7 @@ class PolycodeScreenEditorMain : public UIElement {
 		bool hasSelected(ScreenEntity *entity);
 	
 		void applyEditorOnly(ScreenEntity *entity);
+		void applyEditorOnlyChildren(ScreenEntity *entity);
 		void applyEditorProperties(ScreenEntity *entity);
 			
 		void processEventForEntity(ScreenEntity *childEntity, InputEvent *inputEvent);
@@ -140,6 +144,8 @@ class PolycodeScreenEditorMain : public UIElement {
 		void handleMouseUp(Vector2 position);
 		
 		void setGrid(int gridSize);
+		
+		void adjustForSnap(Vector2 *position);
 		
 		String Copy(void **data);
 		void Paste(void *data, String clipboardType);
@@ -179,6 +185,7 @@ class PolycodeScreenEditorMain : public UIElement {
 		ScreenEntityInstanceSheet *instanceSheet;
 		ScreenSpriteSheet *spriteSheet;
 		ScreenParticleSheet *particleSheet;
+		ScreenEntitySheet *screenEntitySheet;
 		
 		EntityTreeView *treeView;
 		
@@ -190,6 +197,8 @@ class PolycodeScreenEditorMain : public UIElement {
 	
 		int gridSize;
 		bool gridSnap;
+		
+		bool pixelSnap;
 	
 		ScreenShape *previewShape;
 		ScreenImage *previewImage;
@@ -219,6 +228,7 @@ class PolycodeScreenEditorMain : public UIElement {
 		bool rotating;
 		bool panning;
 		bool zooming;
+		bool zoomingMoved;
 		
 		bool parenting;
 		ScreenEntity *parentingChild;
@@ -229,7 +239,8 @@ class PolycodeScreenEditorMain : public UIElement {
 		
 		Vector2 basePanPosition;
 		Vector2 zoomBasePosition;
-		
+		Vector2 zoomBaseMousePosition;
+				
 		Number baseZoomScale;
 		
 		Number baseRotateAngle;
@@ -250,7 +261,8 @@ class PolycodeScreenEditorMain : public UIElement {
 		Vector2 placingAnchor;
 		
 		ScreenShape *screenPreviewShape;
-		
+		ScreenShape *sizePreviewShape;
+				
 		Vector2 dragOffset;
 		bool isDraggingEntity;
 		bool isScalingEntity;
@@ -264,7 +276,8 @@ class PolycodeScreenEditorMain : public UIElement {
 
 		ScreenImage *transformScalerY;
 		ScreenImage *transformScalerX;		
-					
+		ScreenImage *transformScalerXY;
+							
 		ScreenImage *centerImage;
 		
 		ScreenEntity *properties;

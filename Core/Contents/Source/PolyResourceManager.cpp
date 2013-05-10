@@ -156,6 +156,15 @@ void ResourceManager::parseCubemaps(const String& dirPath, bool recursive) {
 	}	
 }
 
+bool ResourceManager::hasResource(Resource *resource) {
+	for(int i=0; i < resources.size(); i++) {
+		if(resources[i] == resource) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void ResourceManager::addResource(Resource *resource) {
 	resources.push_back(resource);
 	resource->resourceFileTime = OSBasics::getFileTime(resource->getResourcePath());
@@ -265,7 +274,7 @@ void ResourceManager::checkForChangedFiles() {
 		if(resources[i]->reloadOnFileModify == true) {
 			time_t newFileTime = OSBasics::getFileTime(resources[i]->getResourcePath());
 //			printf("%s\n%lld %lld\n", resources[i]->getResourcePath().c_str(), newFileTime, resources[i]->resourceFileTime);
-			if(newFileTime != resources[i]->resourceFileTime) {
+			if((newFileTime != resources[i]->resourceFileTime) && newFileTime != 0) {
 				resources[i]->reloadResource();
 				resources[i]->resourceFileTime = newFileTime;
 			}

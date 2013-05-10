@@ -43,15 +43,11 @@ function Level:initLevel()
 
 	self.coins = self.level:getScreenEntitiesByTag("coin", true)
 	for i=1,count(self.coins) do
-		self.coins[i].width = 20
-		self.coins[i].height = 20
 		self.screen:trackCollisionChild(self.coins[i], PhysicsScreenEntity.ENTITY_CIRCLE)
 	end
 
 	self.buttons = self.level:getScreenEntitiesByTag("button", true)
 	for i=1,count(self.buttons) do
-		self.buttons[i].width = 40
-		self.buttons[i].height = 95
 		self.screen:trackPhysicsChild(self.buttons[i], PhysicsScreenEntity.ENTITY_RECT , true, 2.0, 1, 0, false, false)
 	end
 
@@ -94,10 +90,10 @@ end
 
 function Level:onNewCollision(event)
 	physicsEvent = safe_cast(event, PhysicsScreenEvent)
-	local collidedEntity =  physicsEvent:getSecondEntity()
-	local firstEntity = physicsEvent:getFirstEntity()
+	local collidedEntity =  physicsEvent.entity2
+	local firstEntity = physicsEvent.entity1
 
-	if same_c_class(firstEntity, self.player.groundSensor) then
+	if firstEntity == self.player.groundSensor then
 		if collidedEntity:hasTag("button") then
 			local buttonUp = collidedEntity:getEntityById("button_up", true)
 			local buttonDown = collidedEntity:getEntityById("button_down", true)
@@ -113,7 +109,7 @@ function Level:onNewCollision(event)
 		end
 	end
 
-	if same_c_class(firstEntity, self.player.playerEntity) then
+	if firstEntity == self.player.playerEntity then
 		if collidedEntity:hasTag("coin") and collidedEntity.visible == true then
 			collidedEntity.visible = false
 			self.player.numCoins = self.player.numCoins + 1

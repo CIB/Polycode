@@ -49,10 +49,9 @@ ScreenEntityInstance *ScreenEntityInstance::BlankScreenEntityInstance() {
 }
 
 ScreenEntityInstance::ScreenEntityInstance(const String& fileName) : ScreenEntity() {
-	rootEntity = NULL;
 	setPositionMode(ScreenEntity::POSITION_CENTER);
+	resourceEntry = new ScreenEntityInstanceResourceEntry(this);		
 	loadFromFile(fileName);
-	resourceEntry = new ScreenEntityInstanceResourceEntry(this);	
 	resourceEntry->setResourceName(fileName);
 	resourceEntry->setResourcePath(fileName);
 	cloneUsingReload = false;
@@ -60,7 +59,6 @@ ScreenEntityInstance::ScreenEntityInstance(const String& fileName) : ScreenEntit
 }
 
 ScreenEntityInstance::ScreenEntityInstance() : ScreenEntity() {
-	rootEntity = NULL;
 	cloneUsingReload = true;
 	ownsChildren = true;
 	resourceEntry = new ScreenEntityInstanceResourceEntry(this);
@@ -72,7 +70,6 @@ ScreenEntityInstance::~ScreenEntityInstance() {
 }
 
 void ScreenEntityInstance::reloadEntityInstance() {
-	rootEntity->setOwnsChildrenRecursive(true);
 	loadFromFile(fileName);
 }
 
@@ -98,9 +95,6 @@ void ScreenEntityInstance::applyClone(Entity *clone, bool deepClone, bool ignore
 		ScreenEntity::applyClone(clone, deepClone, ignoreEditorOnly);
 		ScreenEntityInstance *_clone = (ScreenEntityInstance*) clone;
 		_clone->fileName = fileName;
-		if(_clone->getNumChildren() > 0) {
-			_clone->rootEntity = (ScreenEntity*)_clone->getChildAtIndex(0);
-		}
 	}
 }
 
@@ -166,7 +160,7 @@ void ScreenEntityInstance::parseObjectIntoCurve(ObjectEntry *entry, BezierCurve 
 	
 }
 
-ScreenEntity *ScreenEntityInstance::loadObjectEntryIntoEntity(ObjectEntry *entry) {
+ScreenEntity *ScreenEntityInstance::loadObjectEntryIntoEntity(ObjectEntry *entry, ScreenEntity *targetEntity) {
 
 	ScreenEntity *entity = NULL;
 	
@@ -284,7 +278,11 @@ ScreenEntity *ScreenEntityInstance::loadObjectEntryIntoEntity(ObjectEntry *entry
 	} 
 
 	if(!entity) {
-		entity = new ScreenEntity();
+		if(targetEntity) {
+			entity = targetEntity;
+		} else {
+			entity = new ScreenEntity();
+		}
 	}
 	
 	entity->ownsChildren = true;
@@ -294,23 +292,40 @@ ScreenEntity *ScreenEntityInstance::loadObjectEntryIntoEntity(ObjectEntry *entry
 	} else {
 		entity->setPositionMode(ScreenEntity::POSITION_CENTER);
 	}
+
+	Number _width, _height;
 	
-	entity->color.r = (*entry)["colorR"]->NumberVal;
-	entity->color.g = (*entry)["colorG"]->NumberVal;
-	entity->color.b = (*entry)["colorB"]->NumberVal;
-	entity->color.a = (*entry)["colorA"]->NumberVal;
-
-	entity->blendingMode = (*entry)["blendMode"]->intVal;
-
-	entity->scale.x = (*entry)["scaleX"]->NumberVal;
-	entity->scale.y = (*entry)["scaleY"]->NumberVal;
-
-	entity->position.x = (*entry)["posX"]->NumberVal;
-	entity->position.y = (*entry)["posY"]->NumberVal;
-
-	entity->setRotation((*entry)["rotation"]->NumberVal);
+	if(entry->readNumber("width", &_width)) {
+		entity->setWidth(_width);	
+	}
 	
-	entity->id = (*entry)["id"]->stringVal;
+	if(entry->readNumber("height", &_height)) {
+		entity->setHeight(_height);	
+	}
+
+
+	if(!targetEntity) {	
+		entity->color.r = (*entry)["colorR"]->NumberVal;
+		entity->color.g = (*entry)["colorG"]->NumberVal;
+		entity->color.b = (*entry)["colorB"]->NumberVal;
+		entity->color.a = (*entry)["colorA"]->NumberVal;
+
+		entity->blendingMode = (*entry)["blendMode"]->intVal;
+
+		entity->scale.x = (*entry)["scaleX"]->NumberVal;
+		entity->scale.y = (*entry)["scaleY"]->NumberVal;
+
+		entity->position.x = (*entry)["posX"]->NumberVal;
+		entity->position.y = (*entry)["posY"]->NumberVal;
+
+		entity->setRotation((*entry)["rotation"]->NumberVal);
+	} else {
+	
+	}
+	
+	if((*entry)["id"]->stringVal != "") {
+		entity->id = (*entry)["id"]->stringVal;
+	}
 	
 	String tagString = (*entry)["tags"]->stringVal; 
 	
@@ -344,21 +359,25 @@ ScreenEntity *ScreenEntityInstance::loadObjectEntryIntoEntity(ObjectEntry *entry
 	return entity;
 }
 
-ScreenEntity *ScreenEntityInstance::getRootEntity() {
-	return rootEntity;
-}
-
 String ScreenEntityInstance::getFileName() const {
 	return fileName;
 }
 
+void ScreenEntityInstance::clearInstance() {
+	for(int i=0; i < children.size(); i++) {
+		removeChild(children[i]);
+		children[i]->setOwnsChildrenRecursive(true);
+		delete children[i];
+	}
+}
+
 bool ScreenEntityInstance::loadFromFile(const String& fileName) {
 
-	if(rootEntity) {
-		removeChild(rootEntity);
-		delete rootEntity;		
-	}
+	clearInstance();
+	
+	resourceEntry->resourceFileTime = OSBasics::getFileTime(fileName);
 
+	this->ownsChildren = true;
 	this->fileName = fileName;
 	Object loadObject;
 	if(!loadObject.loadFromBinary(fileName)) {
@@ -367,9 +386,8 @@ bool ScreenEntityInstance::loadFromFile(const String& fileName) {
 	ObjectEntry *root = loadObject.root["root"];
 	
 	if(root) {
-		rootEntity = loadObjectEntryIntoEntity(root);
-		rootEntity->ownsChildren = true;
-		addChild(rootEntity);		
+		loadObjectEntryIntoEntity(root, this);
 	}
+	
 	return true;
 }

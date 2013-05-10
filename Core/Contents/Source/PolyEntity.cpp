@@ -417,7 +417,7 @@ void Entity::transformAndRender() {
 
 				
 			if(finalScrissorBox.x+finalScrissorBox.w > oldScissorBox.x + oldScissorBox.w)
-				finalScrissorBox.w = oldScissorBox.x - finalScrissorBox.x;
+				finalScrissorBox.w = oldScissorBox.x + oldScissorBox.w - finalScrissorBox.x;
 
 			if(finalScrissorBox.y < oldScissorBox.y)
 				finalScrissorBox.y = oldScissorBox.y;
@@ -425,7 +425,7 @@ void Entity::transformAndRender() {
 				finalScrissorBox.y = oldScissorBox.y + oldScissorBox.h;
 
 			if(finalScrissorBox.y+finalScrissorBox.h > oldScissorBox.y + oldScissorBox.h)
-				finalScrissorBox.h = oldScissorBox.y - finalScrissorBox.y;
+				finalScrissorBox.h = oldScissorBox.y + oldScissorBox.h - finalScrissorBox.y;
 
 		}
 		
@@ -434,8 +434,8 @@ void Entity::transformAndRender() {
 		
 	renderer->pushMatrix();
 	if(ignoreParentMatrix && parentEntity) {
-		renderer->multModelviewMatrix(parentEntity->getConcatenatedMatrix().inverse());
-//		renderer->setCurrentModelMatrix(parentEntity->getConcatenatedMatrix().inverse());
+		renderer->multModelviewMatrix(parentEntity->getConcatenatedMatrix().Inverse());
+//		renderer->setCurrentModelMatrix(parentEntity->getConcatenatedMatrix().Inverse());
 	}
 
 		renderer->multModelviewMatrix(transformMatrix);
@@ -785,6 +785,8 @@ void Entity::clearTags() {
 
 void Entity::addTag(String tag) {
 	if(!tags) tags = new std::vector<String>();
-	tags->push_back(tag);
+	if(!hasTag(tag)) {
+		tags->push_back(tag);
+	}
 }
 
