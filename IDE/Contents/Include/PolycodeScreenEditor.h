@@ -49,6 +49,15 @@ class EntityBrowserData  {
 		Entity *entity;
 };
 
+class PolycodeScreenEditorActionData : PolycodeEditorActionData {
+	public:
+		PolycodeScreenEditorActionData() {}
+		PolycodeScreenEditorActionData(Vector3 vec3);
+		virtual ~PolycodeScreenEditorActionData(){}
+		
+		Vector3 vec3;
+};
+
 class EntityTreeView : public UIElement {
 	public:
 		EntityTreeView(Entity *rootEntity);
@@ -123,6 +132,8 @@ class PolycodeScreenEditorMain : public UIElement {
 		void resizePreviewScreen();		
 		void handleDroppedFile(OSFileEntry file, Number x, Number y);		
 		bool hasSelected(ScreenEntity *entity);
+		
+		void deleteEntity(ScreenEntity *entity);
 	
 		void applyEditorOnly(ScreenEntity *entity);
 		void applyEditorOnlyChildren(ScreenEntity *entity);
@@ -147,6 +158,9 @@ class PolycodeScreenEditorMain : public UIElement {
 		
 		void adjustForSnap(Vector2 *position);
 		
+		void setCurrentLayer(ScreenEntity *newLayer);
+		ScreenEntity *getCurrentLayer();
+		
 		String Copy(void **data);
 		void Paste(void *data, String clipboardType);
 		void destroyClipboardData(void *data, String type);
@@ -166,13 +180,11 @@ class PolycodeScreenEditorMain : public UIElement {
 																
 		std::vector<ScreenEntity*> layers;
 		
-		ScreenEntity *currentLayer;
-		
 		PropList *entityProps;
 		
 		ScreenEntity *layerBaseEntity;		
 						
-		ScreenEntity *selectedEntity;
+//		ScreenEntity *selectedEntity;
 		std::vector<ScreenEntity*> selectedEntities;		
 		
 		Transform2DSheet *transform2dSheet;
@@ -192,8 +204,11 @@ class PolycodeScreenEditorMain : public UIElement {
 		ScreenEntity *objectBaseEntity;		
 		ScreenEntity *placingPreviewEntity;												
 		bool multiSelect;
+		
+		PolycodeEditor *editor;		
 	protected:
 	
+		ScreenEntity *currentLayer;	
 	
 		int gridSize;
 		bool gridSnap;
@@ -354,6 +369,8 @@ class PolycodeScreenEditor : public PolycodeEditor {
 		void saveCurveToObject(ObjectEntry *entry, BezierCurve *curve);
 		void saveEntityToObjectEntry(ScreenEntity *entity, ObjectEntry *entry);
 		void saveFile();
+		
+		void doAction(String actionName, PolycodeEditorActionData *data);
 					
 		void handleDroppedFile(OSFileEntry file, Number x, Number y);
 
