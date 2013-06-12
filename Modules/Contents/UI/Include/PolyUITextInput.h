@@ -34,6 +34,7 @@
 #include "PolyCoreInput.h"
 #include "PolyCore.h"
 #include <vector>
+#include <list>
 #include "PolyUIScrollContainer.h"
 
 using namespace std;
@@ -330,6 +331,14 @@ namespace Polycode {
 			void renumberLines();
 		
 			bool lineNumbersEnabled;
+
+			// Wrap text lines at word boundaries, if
+			// they exceed the width of the widget?
+			//
+			// If set to false, should in theory be possible
+			// to horizontally scroll the text widget, 
+			// but this hasn't yet been implemented.
+			bool wordWrap;
 		
 			Color textColor;
 			Color lineNumberColor;
@@ -435,14 +444,88 @@ namespace Polycode {
 			int lineOffset;
 			
 			vector<String> lines;
-						
-			vector<ScreenLabel*> bufferLines;
-			vector<ScreenLabel*> numberLines;
 			
 			Core *core;
         
 			enum indentTypes { INDENT_SPACE, INDENT_TAB } indentType;
 			int indentSpacing;
 			
+			// Buffer line linked list container
+			// ---------------------------------
+			typedef list<DisplayLineNode>::iterator displayLine;
+
+			struct DisplayLineNode {
+				DisplayLineNode(String content) : content(content), label(NULL) { };
+				~DisplayLineNode();
+				
+				ScreenLabel* label;
+				String content;
+			}
+
+			struct DocumentLineNode {
+				DocumentLineNode(String content) : lineLabel(NULL) { };
+				~DocumentLineNode();
+				
+				displayLine begin; // First sub-element of this document line.
+				displayLine last; // Last actual sub-element of this document line.
+
+				ScreenLabel* lineLabel;
+
+				// Get the Y position of this node. Only works for nodes that are
+				// currently being displayed. Returns -1 for nodes that aren't being
+				// displayed.
+				int getPositionY();
+			};
+
+			typedef list<DocumentLineNode>::iterator documentLine;
+
+			// Specialized container to hold buffer lines, designed
+			// for fast insert/delete operations, as well as efficient
+			// storage of document lines being split into display lines
+			// due to word wrap.
+			class BufferLinesContainer {
+			public:
+				list<DocumentLineNode> documentLines;
+				list<String> allDisplayLines;
+
+				displayLine endBuffer() {
+					return allDisplayLines.end();
+				}
+
+				/**
+				 * Delete all elements in the container.
+				 */
+				void clear();
+
+				/** 
+				 * Split off the given buffer line at the given position, and
+				 * return the rightmost one of the two resulting lines.
+				 */
+				displayLine splitDisplayLine(displayLine lineToSplit, int position, DocumentLineNode& parent);
+
+				/** 
+				 * Join the given display line back together with its successor.
+				 */
+				displayLine joinDisplayLine(displayLine lineToJoin, DocumentLineNode& parent);
+
+
+				/** 
+				 * Get the next buffer line after the given one, or endBuffer()
+				 * if none.
+				 */
+				displayLine nextBufferLine(displayLine lineToIncrement);
+
+
+			};
+
+
+			// Invariant: Only lines between firstDisplayedLine and lastDisplayedLine have any
+			// ScreenEntity's associated with them.
+			
+			// First displayed document line.
+			documentLine firstDisplayedLine;
+
+			// Last displayed document line.
+			documentLine lastDisplayedLine;
 	};
 }

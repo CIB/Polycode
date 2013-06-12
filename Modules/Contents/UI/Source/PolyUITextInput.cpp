@@ -1665,3 +1665,58 @@ void UITextInput::convertIndentToTabs() {
 		//TODO
 	}
 }
+
+UITextInput::DisplayLineNode::~DisplayLineNode() {
+	if(label) {
+		label->getParentEntity()->removeChild(label);
+		delete label;
+	}
+}
+
+UITextInput::DocumentLineNode::~DocumentLineNode() {
+	if(lineLabel) {
+		lineLabel->getParentEntity()->removeChild(label);
+		delete lineLabel;
+	}
+}
+
+UITextInput::displayLine UITextInput::BufferLinesContainer::splitDisplayLine(displayLine line, int position, DocumentLineNode& parent) {
+	// Do the actual line splitting.
+	String newPartA = line->content.substr(0, position);
+	String newPartB = line->content.substr(position, line->content.length() - position);
+	
+	// Replace the node with the two new ones.
+	allDisplayLines.insert(line, DisplayLineNode(newPartA));
+	*line = DisplayLineNode(DisplayLineNode(newPartB));
+
+	// Update parent.last
+	line--;
+	// Check if the end was the line we split.
+	if(parent.last == line) {
+		parent.last++;
+	}
+}
+
+UITextInput::displayLine UITextInput::BufferLinesContainer::joinDisplayLine(displayLine line, DocumentLineNode& parent) {
+	displayLine successor = line; successor++;
+
+	// Do the actual line joining.
+	String joinedString = line->content + successor->content;
+
+	// Update parent.last
+	if(parent.last == successor) {
+		parent.last--;
+	}
+
+	// Replace the two nodes with the new joined one.
+	*line = DisplayLineNode(joinedString);
+	allDisplayLines.erase(successor);
+}
+
+void UITextInput::BufferLinesContainer::clear() {
+	// First rip down the document lines.
+	documentLines.clear();
+
+	// Now rip down the display lines.
+	allDisplayLines.clear();
+}
